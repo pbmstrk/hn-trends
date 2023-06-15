@@ -1,0 +1,125 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: main
+    tables:
+      - name: hn_stories
+        description: Hacker News submissions
+        columns:
+          - name: timestamp
+            description: Submission timestamp
+            tests:
+              - not_null 
+              - dbt_utils.accepted_range:
+                  min_value: "cast('2006-10-09' as date)"
+                  inclusive: true
+
+          - name: title
+            description: Submission title
+            tests:
+              - not_null 
+
+          - name: url
+            description: Submission URL (can be null, e.g. Ask HN submissions)
+
+          - name: author
+            description: Account associated with the submission
+            tests:
+              - not_null 
+
+          - name: points 
+            description: Number of points
+            tests:
+              - dbt_utils.accepted_range:
+                  min_value: 0 
+                  inclusive: true
+                  config:
+                    severity: warn
+            
+
+          - name: num_comments
+            description: Number of comments 
+            tests:
+              - dbt_utils.accepted_range:
+                  min_value: 0 
+                  inclusive: true
+            
+          - name: created_at_i
+            description: Unix timestamp of submission time
+            tests:
+              - not_null
+              - dbt_utils.accepted_range:
+                  min_value: 1160348400
+                  inclusive: true
+
+          - name: objectID
+            description: Unique identifier of submission. Submission can be accessed using https://news.ycombinator.com/item?id={ObjectID}
+            tests:
+              - unique
+              - not_null 
+
+          - name: record_created_at 
+            description: Time record was inserted into table
+            tests:
+              - not_null
+   
+      - name: keywords
+        description: Defines list of keywords available in dropdown menus.
+        columns:
+          - name: keyword
+            description: Keyword in lower case.
+            tests:
+              - unique
+              - not_null
+
+          - name: display_name
+            description: Keyword with display styling (e.g. casing)
+            tests:
+              - unique
+              - not_null
+
+      - name: hn_hiring_comments
+        description: Comments on *Who is hiring?* threads
+        columns:
+          - name: created_at 
+            description: Comment creation time 
+            tests:
+              - not_null
+              - dbt_utils.accepted_range:
+                  min_value: "cast('2011-04-01' as date)"
+                  inclusive: true 
+              
+          - name: author 
+            description: Comment author
+            tests:
+              - not_null 
+
+          - name: comment_text 
+
+          - name: story_id 
+            description: ID of associated submission
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'hn_stories')
+                  field: objectID
+
+          - name: parent_id
+            description: ID of parent (could either be another comment or the story)
+            tests:
+              - not_null 
+
+          - name: created_at_i 
+            description: Unix timestamp of comment creation 
+            tests:
+              - not_null
+              - dbt_utils.accepted_range:
+                  min_value: 1301612400
+                  inclusive: true 
+
+          - name: objectID
+            description: Unique identifier of comment 
+            tests: 
+              - not_null 
+              - unique
