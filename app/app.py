@@ -21,7 +21,7 @@ LINKS = {
 
 navbar = dbc.NavbarSimple(
     brand="Hacker News Trends",
-    brand_style={"font-size": "2rem"},
+    brand_style={"fontSize": "2rem"},
     color="#FD9752",
     class_name="title",
     id="navbar",
