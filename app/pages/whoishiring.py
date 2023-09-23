@@ -39,7 +39,7 @@ Use the dropdown to display the number of comments that include the selected key
 database_url = fetch_database_url()
 engine = create_engine(database_url, pool_pre_ping=True, pool_recycle=3600)
 
-keyword_df = execute_query(engine, "select * from words where include_hiring;")
+keyword_df = execute_query(engine, "select * from keyword_list where include_hiring;")
 
 KEYWORDS = keyword_df["keyword"].tolist()
 WORD2DISPLAY = {t.keyword: t.display_name for t in keyword_df.itertuples()}
@@ -79,14 +79,14 @@ def exclude_blog_checkbox(checked):
     if checked:
         query = """
         select year_month, count(*) as num_comments
-        from hn_hiring_comments 
+        from hiring_comments 
         where is_toplevel_comment
         group by year_month
         order by year_month"""
     else:
         query = """
         select year_month, count(*) as num_comments
-        from hn_hiring_comments 
+        from hiring_comments 
         group by year_month
         order by year_month"""
     dff = execute_query(engine, query)

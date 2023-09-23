@@ -57,7 +57,7 @@ of submissions that contain the selected keyword from the corresponding time per
 database_url = fetch_database_url()
 engine = create_engine(database_url, pool_pre_ping=True, pool_recycle=3600)
 
-keyword_df = execute_query(engine, "select * from words;")
+keyword_df = execute_query(engine, "select * from keyword_list;")
 
 KEYWORDS = keyword_df["keyword"].tolist()
 WORD2DISPLAY = dict(zip(keyword_df["keyword"], keyword_df["display_name"]))
