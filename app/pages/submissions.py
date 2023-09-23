@@ -42,10 +42,6 @@ SQL_QUERY_KEYWORD_TITLES = """
     where word = :keyword
     and year_month = :year_month
 """
-SQL_QUERY_ENGAGEMENT = """
-    select * from engagement where
-    submission_year = :year
-"""
 
 TEXT_NUMBER_SUBMISSIONS = """
 #### Number of submissions"""
