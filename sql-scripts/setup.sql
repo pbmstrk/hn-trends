@@ -69,6 +69,7 @@ create materialized view keywords as (
 
   select
     word,
+    objectID,
     submission_date,
     title,
     year_month
