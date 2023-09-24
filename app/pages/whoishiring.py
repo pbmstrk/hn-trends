@@ -96,7 +96,6 @@ def exclude_blog_checkbox(checked):
         x="year_month",
         y="num_comments",
         title="Number of comments",
-        line_shape="spline",
         labels={"year_month": "Month", "num_comments": "Number of comments"}
     )
 
