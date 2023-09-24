@@ -1,1 +1,0 @@
-database_url=jdbc:postgresql://paulbaumstark@host.docker.internal:5432/hndata_clj
