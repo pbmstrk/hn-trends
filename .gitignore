@@ -24,3 +24,6 @@ target/
 
 .nrepl-port
 *.iml
+
+.local-env
+.prod-env
