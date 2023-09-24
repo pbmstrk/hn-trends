@@ -1,4 +1,5 @@
 (ns hndata.main
+  (:gen-class)
   (:require [clojure.string :as str]
             [hndata.http :as http]
             [next.jdbc :as jdbc]
