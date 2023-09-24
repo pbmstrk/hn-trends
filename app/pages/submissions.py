@@ -37,7 +37,7 @@ SQL_QUERY_KEYWORD_OCCURENCES = """
     order by year_month
 """
 SQL_QUERY_KEYWORD_TITLES = """
-    select title, objectID, submission_date 
+    select title, objectID, cast(submission_date as date)
     from keywords
     where word = :keyword
     and year_month = :year_month
