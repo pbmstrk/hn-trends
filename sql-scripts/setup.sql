@@ -15,8 +15,7 @@ create table if not exists hiring_comments (
   storyid text not null,
   parentid text not null,
   created_date text not null,
-  is_toplevel_comment boolean generated always as (storyid = parentid) stored,
-  year_month text generated always as (substring(created_date, 1, 7)) stored
+  is_toplevel_comment boolean generated always as (storyid = parentid) stored
 );
 
 
