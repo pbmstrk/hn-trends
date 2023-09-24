@@ -96,12 +96,12 @@ def exclude_blog_checkbox(checked):
         x="year_month",
         y="num_comments",
         title="Number of comments",
-        labels={"year_month": "Month", "num_comments": "Number of comments"},
         line_shape="spline",
+        labels={"year_month": "Month", "num_comments": "Number of comments"}
     )
 
     fig.update_traces(
-        hovertemplate="<br>".join(["Month: %{x|%B %Y}", "Number of articles: %{y}"]),
+        hovertemplate="<br>".join(["Month: %{x|%B %Y}", "Number of comments: %{y}"]),
         line={"width": 2.5, "color": "#1B4D3E"},
     )
 
@@ -138,7 +138,7 @@ def update_keyword_figure(value):
     )[["num_occurences"]].reset_index()
 
     dff["word"] = dff["word"].map(WORD2DISPLAY)
-
+    display_words = [WORD2DISPLAY[val] for val in value]
     fig = px.line(
         dff,
         x="year_month",
@@ -146,6 +146,7 @@ def update_keyword_figure(value):
         color="word",
         markers=True,
         line_shape="spline",
+        category_orders={"word": display_words},
         labels={
             "word": "Keyword",
             "num_occurences": "No. occurences",
