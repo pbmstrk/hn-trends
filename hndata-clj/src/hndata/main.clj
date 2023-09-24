@@ -6,7 +6,7 @@
   (:import (org.jsoup.parser Parser)))
 
 (defn get-datasource-from-env []
-  (let [database-url "jdbc:postgresql://paulbaumstark@localhost:5432/hndata_clj"]
+  (let [database-url (System/getenv "database_url")]
     (jdbc/get-datasource database-url)))
 
 (defn build-filter-string [field op val]
