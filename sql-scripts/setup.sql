@@ -15,7 +15,8 @@ create table if not exists hiring_comments (
   storyid text not null,
   parentid text not null,
   created_date text not null,
-  is_toplevel_comment boolean generated always as (storyid = parentid) stored
+  is_toplevel_comment boolean generated always as (storyid = parentid) stored,
+  year_month text generated always as (substring(created_date, 1 ,7)) stored
 );
 
 
@@ -39,6 +40,12 @@ create or replace view hiring_stories as (
 
 
 \copy keyword_list FROM 'words.csv' delimiter ',' csv header
+
+create or replace function distinct_words(arr text [])
+returns text []
+as $$
+select array_agg(distinct word) from unnest(arr) as t(word)
+$$ language sql;
 
 
 create materialized view keywords as (
@@ -99,8 +106,7 @@ create materialized view hiring_keywords as (
   unnested_table as (
     select
       *,
-      unnest(words) as word,
-      substring(created_date, 1, 7) as year_month
+      unnest(words) as word
     from word_array
   )
 
@@ -147,9 +153,3 @@ begin
         where cast(s.submission_date as date) < CURRENT_DATE - interval '5 days'
         and not exists (select 1 from hiring_posts_log h where s.objectID = h.objectID);
 end;$$;
-
-create or replace function distinct_words(arr text [])
-returns text []
-as $$
-select array_agg(distinct word) from unnest(arr) as t(word)
-$$ language sql;
