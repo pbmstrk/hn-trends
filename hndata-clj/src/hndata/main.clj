@@ -7,16 +7,16 @@
             [taoensso.timbre :as log])
   (:import (org.jsoup.parser Parser)))
 
-(def algolia-hn-search-url "http://hn.algolia.com/api/v1/search_by_date")
-(def insert-stories-statement
+(def ^:const algolia-hn-search-url "http://hn.algolia.com/api/v1/search_by_date")
+(def ^:const insert-stories-statement
   (str "INSERT INTO stories "
        "(objectID, submission_date, created_at_i, title, author) "
        "VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING"))
-(def insert-comments-statement
+(def ^:const insert-comments-statement
   (str "INSERT INTO hiring_comments "
        "(objectID, comment_text, storyID, parentID, created_date) "
        "VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING"))
-(def hits-per-page 1000)
+(def ^:const hits-per-page 1000)
 
 (defn get-datasource-from-env []
   (jdbc/get-datasource (System/getenv "database_url")))
@@ -76,10 +76,11 @@
       {:should-continue false})))
 
 (defn process-search-results [{:keys [tags creation-lb creation-ub process-function]}]
-  (loop [next-ub creation-ub]
+  (loop [next-ub creation-ub iteration 1]
+    (log/info "Batch" iteration)
     (let [{:keys [should-continue ub]} (process-batch process-function tags creation-lb next-ub)]
       (if should-continue
-        (recur ub)
+        (recur ub (inc iteration))
         (log/info "Fetching complete...")))))
 
 (defn get-unprocessed-ids [ds]
