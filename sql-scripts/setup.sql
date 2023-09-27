@@ -67,10 +67,12 @@ create materialized view keywords as (
 
   unnested_table as (
     select
-      *,
-      unnest(words) as word,
+      objectId,
+      submission_date,
+      title,
+      word,
       substring(submission_date, 1, 7) as year_month
-    from word_array
+    from word_array, unnest(words) as word
   )
 
   select
@@ -105,9 +107,10 @@ create materialized view hiring_keywords as (
 
   unnested_table as (
     select
-      *,
-      unnest(words) as word
-    from word_array
+      objectId,
+      year_month,
+      word
+    from word_array, unnest(words) as word
   )
 
   select
