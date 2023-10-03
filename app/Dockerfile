@@ -2,14 +2,14 @@ FROM python:3.11-slim
 
 WORKDIR /hn-trends
 
-COPY . ./app/
+COPY ./requirements.txt /hn-trends/
 
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-RUN pip install --upgrade pip
-RUN pip install -r app/requirements.txt 
+COPY app/ /hn-trends/app/
 
 EXPOSE 8050
 
-ENV PYTHONPATH /hn-trends/app
+ENV PYTHONPATH /hn-trends/app/
 
-CMD ["gunicorn", "-b", "0.0.0.0:8050", "--reload", "app.app:server"]
+CMD ["gunicorn", "-b", "0.0.0.0:8050", "app.app:server"]
