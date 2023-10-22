@@ -51,21 +51,6 @@
          :created_at)
    record))
 
-(defn insert-with-preprocessing!
-  "Execute a batch insert into the database after processing records."
-  [ds records query record-processor]
-  (jdbc/execute-batch! ds query (map record-processor records) {}))
-
-(defn insert-stories!
-  "Batch insert stories into the database."
-  [ds stories]
-  (insert-with-preprocessing! ds stories insert-stories-statement extract-story-metadata))
-
-(defn insert-comments!
-  "Batch insert comments into the database."
-  [ds comments]
-  (insert-with-preprocessing! ds comments insert-comments-statement extract-comment-metadata))
-
 (defn fetch-batch
   "Fetch a batch of results from API based on search parameters."
   [tags creation-lb creation-ub]
@@ -74,26 +59,31 @@
     (log/info "Fetching batch with params.. " query-params)
     (:hits response)))
 
-(defn process-batch
-  "Process a batch of records and determine if further processing is needed."
-  [insert-function tags creation-lb creation-ub]
-  (let [records (fetch-batch tags creation-lb creation-ub)]
-    (log/info "Processing batch of size: " (count records))
-    (insert-function records)
-    ; The created_at_i field is used to paginate through the results. If
-    ; the number of results is equal to the page size (i.e. hits per page),
-    ; this indicates we may need further requests to retrieve all the data
-    (if (= (count records) hits-per-page)
-      {:should-continue true :ub (apply min (map :created_at_i records))}
-      {:should-continue false})))
+(defn lazy-batch-sequence
+  [tags creation-lb creation-ub]
+  (lazy-seq
+    (let [records (fetch-batch tags creation-lb creation-ub)]
+      (when (seq records)
+        (cons records
+              ; batch having fewer records than hits-per-page indicates that
+              ; all records have been retrieved.
+              (when (= (count records) hits-per-page)
+                (lazy-batch-sequence tags creation-lb (apply min (map :created_at_i records)))))))))
 
-(defn process-search-results [{:keys [tags creation-lb creation-ub insert-function]}]
-  (loop [next-ub creation-ub iteration 1]
-    (log/info "Batch" iteration)
-    (let [{:keys [should-continue ub]} (process-batch insert-function tags creation-lb next-ub)]
-      (if should-continue
-        (recur ub (inc iteration))
-        (log/info "Fetching complete...")))))
+(defn insert-records! [ds sql-statement extract-fn batch]
+  (let [records (map extract-fn batch)]
+    (jdbc/execute-batch! ds sql-statement records {})))
+
+(defn insert-stories! [ds batch]
+  (insert-records! ds insert-stories-statement extract-story-metadata batch))
+
+(defn insert-comments! [ds batch]
+  (insert-records! ds insert-comments-statement extract-comment-metadata batch))
+
+(defn process-search-results [{:keys [tags creation-lb creation-ub insert-fn]}]
+  (let [batches (lazy-batch-sequence tags creation-lb creation-ub)]
+    (doseq [batch batches]
+      (insert-fn batch))))
 
 (defn get-unprocessed-hiring-story-ids [ds]
   (let [query "select get_unprocessed_hiring_stories() as id;"
@@ -104,10 +94,10 @@
 (defn process-all-comments [ds]
   (let [ids (get-unprocessed-hiring-story-ids ds)]
     (doseq [id ids]
-      (process-search-results {:tags            (format "comment,story_%s" id)
-                               :creation-lb     nil
-                               :creation-ub     nil
-                               :insert-function (partial insert-comments! ds)})
+      (process-search-results {:tags        (format "comment,story_%s" id)
+                               :creation-lb nil
+                               :creation-ub nil
+                               :insert-fn   (partial insert-comments! ds)})
       (sql/insert! ds :hiring_posts_log {:objectID id}))))
 
 (defn fetch-latest-story-timestamp [ds]
@@ -124,10 +114,10 @@
   (let [ds (get-datasource-from-env)
         latest-timestamp (fetch-latest-story-timestamp ds)]
     ; process all new stories from the latest timestamp record in db
-    (process-search-results {:tags            "story"
-                             :creation-lb     latest-timestamp
-                             :creation-ub     nil
-                             :insert-function (partial insert-stories! ds)})
+    (process-search-results {:tags        "story"
+                             :creation-lb latest-timestamp
+                             :creation-ub nil
+                             :insert-fn   (partial insert-stories! ds)})
     ; check if there are any unprocessed "who is hiring" stories and fetch comments
     (process-all-comments ds)
     (refresh-views ds ["keywords" "hiring_keywords" "submissions_per_day"])))
