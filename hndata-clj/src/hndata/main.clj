@@ -70,20 +70,20 @@
               (when (= (count records) hits-per-page)
                 (lazy-batch-sequence tags creation-lb (apply min (map :created_at_i records)))))))))
 
-(defn insert-records! [ds sql-statement extract-fn batch]
-  (let [records (map extract-fn batch)]
-    (jdbc/execute-batch! ds sql-statement records {})))
+(defn insert-records! [ds sql-statement extract-fn batches]
+  (doseq [batch batches]
+    (let [records (map extract-fn batch)]
+      (jdbc/execute-batch! ds sql-statement records {}))))
 
-(defn insert-stories! [ds batch]
-  (insert-records! ds insert-stories-statement extract-story-metadata batch))
+(defn insert-stories! [ds batches]
+  (insert-records! ds insert-stories-statement extract-story-metadata batches))
 
-(defn insert-comments! [ds batch]
-  (insert-records! ds insert-comments-statement extract-comment-metadata batch))
+(defn insert-comments! [ds batches]
+  (insert-records! ds insert-comments-statement extract-comment-metadata batches))
 
-(defn process-search-results [{:keys [tags creation-lb creation-ub insert-fn]}]
+(defn process-search-results [{:keys [tags creation-lb creation-ub]} process-fn]
   (let [batches (lazy-batch-sequence tags creation-lb creation-ub)]
-    (doseq [batch batches]
-      (insert-fn batch))))
+    (process-fn batches)))
 
 (defn get-unprocessed-hiring-story-ids [ds]
   (let [query "select get_unprocessed_hiring_stories() as id;"
@@ -96,8 +96,8 @@
     (doseq [id ids]
       (process-search-results {:tags        (format "comment,story_%s" id)
                                :creation-lb nil
-                               :creation-ub nil
-                               :insert-fn   (partial insert-comments! ds)})
+                               :creation-ub nil}
+                              (partial insert-comments! ds))
       (sql/insert! ds :hiring_posts_log {:objectID id}))))
 
 (defn fetch-latest-story-timestamp [ds]
@@ -116,8 +116,8 @@
     ; process all new stories from the latest timestamp record in db
     (process-search-results {:tags        "story"
                              :creation-lb latest-timestamp
-                             :creation-ub nil
-                             :insert-fn   (partial insert-stories! ds)})
+                             :creation-ub nil}
+                            (partial insert-stories! ds))
     ; check if there are any unprocessed "who is hiring" stories and fetch comments
     (process-all-comments ds)
     (refresh-views ds ["keywords" "hiring_keywords" "submissions_per_day"])))
