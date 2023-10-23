@@ -2,8 +2,8 @@ create table if not exists stories (
   objectid text primary key,
   submission_date text not null,
   created_at_i integer not null,
-  title text not null,
-  author text not null
+  title text null,
+  author text null
 );
 
 create index idx_stories_author on stories (author);
