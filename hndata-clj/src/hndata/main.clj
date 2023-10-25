@@ -45,9 +45,14 @@
   ((juxt :objectID :created_at :created_at_i :title :author)
    record))
 
+(defn unescape-html
+  "Converts HTML escape sequences in text back to their corresponding characters."
+  [s]
+  (Parser/unescapeEntities s true))
+
 (defn extract-comment-metadata [record]
   ((juxt :objectID
-         (comp #(Parser/unescapeEntities % true) :comment_text)
+         (comp unescape-html :comment_text)
          :story_id
          :parent_id
          :created_at)
