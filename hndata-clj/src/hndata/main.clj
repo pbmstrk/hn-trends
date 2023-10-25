@@ -23,12 +23,14 @@
 
 (def operator-mappings {"lt" "<", "gt" ">"})
 (defn build-numeric-filter-string [field op val]
+  (assert (contains? operator-mappings op))
   (when (some? val)
-    (str field (operator-mappings op) val)))
+    (str field (get operator-mappings op) val)))
 
 (defn build-query-params
   "Build query parameters for the Algolia API based on tags and creation date bounds."
   [tags creation-lb creation-ub]
+  (assert (some? tags))
   (let [params {:tags tags :hitsPerPage hits-per-page}
         lower-bound (build-numeric-filter-string "created_at_i" "gt" creation-lb)
         upper-bound (build-numeric-filter-string "created_at_i" "lt" creation-ub)
