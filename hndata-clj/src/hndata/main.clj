@@ -48,7 +48,9 @@
 (defn unescape-html
   "Converts HTML escape sequences in text back to their corresponding characters."
   [s]
-  (Parser/unescapeEntities s true))
+  (if (nil? s)
+    ""
+    (Parser/unescapeEntities s true)))
 
 (defn extract-comment-metadata [record]
   ((juxt :objectID

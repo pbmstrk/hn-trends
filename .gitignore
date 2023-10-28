@@ -27,3 +27,5 @@ target/
 
 .local-env
 .prod-env
+
+.vscode/
