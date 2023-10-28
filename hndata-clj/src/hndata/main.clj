@@ -29,7 +29,7 @@
 
 (defn build-query-params
   "Build query parameters for the Algolia API based on tags and creation date bounds."
-  [tags creation-lb creation-ub]
+  [{:keys [tags creation-lb creation-ub]}]
   (assert (some? tags))
   (let [params {:tags tags :hitsPerPage hits-per-page}
         lower-bound (build-numeric-filter-string "created_at_i" "gt" creation-lb)
@@ -60,22 +60,22 @@
 
 (defn fetch-batch
   "Fetch a batch of results from API based on search parameters."
-  [tags creation-lb creation-ub]
-  (let [query-params (build-query-params tags creation-lb creation-ub)
+  [search-map]
+  (let [query-params (build-query-params search-map)
         response (http/fetch-data-from-algolia algolia-hn-search-url query-params)]
     (log/info "Fetching batch with params.. " query-params)
     (:hits response)))
 
 (defn lazy-batch-sequence
-  [tags creation-lb creation-ub]
+  [search-map]
   (lazy-seq
-    (let [records (fetch-batch tags creation-lb creation-ub)]
+    (let [records (fetch-batch search-map)]
       (when (seq records)
         (cons records
               ; batch having fewer records than hits-per-page indicates that
               ; all records have been retrieved.
               (when (= (count records) hits-per-page)
-                (lazy-batch-sequence tags creation-lb (apply min (map :created_at_i records)))))))))
+                (lazy-batch-sequence (assoc search-map :creation-ub (apply min (map :created_at_i records))))))))))
 
 (defn insert-records! [ds sql-statement extract-fn batches]
   (doseq [batch batches]
@@ -88,8 +88,8 @@
 (defn insert-comments! [ds batches]
   (insert-records! ds insert-comments-statement extract-comment-metadata batches))
 
-(defn process-search-results [{:keys [tags creation-lb creation-ub]} process-fn]
-  (let [batches (lazy-batch-sequence tags creation-lb creation-ub)]
+(defn process-search-results [search-map process-fn]
+  (let [batches (lazy-batch-sequence search-map)]
     (process-fn batches)))
 
 (defn get-unprocessed-hiring-story-ids [ds]
