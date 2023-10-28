@@ -68,7 +68,7 @@
     (log/info "Fetching batch with params.. " query-params)
     (:hits response)))
 
-(defn lazy-batch-sequence
+(defn search-results
   [search-map]
   (lazy-seq
     (let [records (fetch-batch search-map)]
@@ -77,7 +77,7 @@
               ; batch having fewer records than hits-per-page indicates that
               ; all records have been retrieved.
               (when (= (count records) hits-per-page)
-                (lazy-batch-sequence (assoc search-map :creation-ub (apply min (map :created_at_i records))))))))))
+                (search-results (assoc search-map :creation-ub (apply min (map :created_at_i records))))))))))
 
 (defn insert-records! [ds sql-statement extract-fn batches]
   (doseq [batch batches]
@@ -91,7 +91,7 @@
   (insert-records! ds insert-comments-statement extract-comment-metadata batches))
 
 (defn process-search-results [search-map process-fn]
-  (let [batches (lazy-batch-sequence search-map)]
+  (let [batches (search-results search-map)]
     (process-fn batches)))
 
 (defn get-unprocessed-hiring-story-ids [ds]
