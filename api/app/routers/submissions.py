@@ -34,7 +34,7 @@ and year_month = :year_month
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("/history")
 def get_num_submissions(connection: Connection = Depends(get_connection)):
     result = execute_query(
         connection, SQL_NUM_SUBMISSIONS_QUERY

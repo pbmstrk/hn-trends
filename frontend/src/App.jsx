@@ -73,7 +73,7 @@ function Submissions() {
   let apiURL = import.meta.env.VITE_API_URL;
 
   const fetchData = () => {
-    fetch(`${apiURL}/submissions`)
+    fetch(`${apiURL}/submissions/history`)
       .then(response => response.json())
       .then(data => {
         setNumSubmissions(data);
@@ -314,7 +314,7 @@ function WhoIsHiringNumGraph() {
   let apiURL = import.meta.env.VITE_API_URL;
 
   const fetchData = () => {
-    fetch(`${apiURL}/hiring?toplevel_only=${includeOnlyTopLevel}`)
+    fetch(`${apiURL}/hiring/history?toplevel_only=${includeOnlyTopLevel}`)
       .then(response => response.json())
       .then(data => {
         setData(data);

@@ -12,7 +12,7 @@ SQL_KEYWORD_HIRING_OCCURENCES_QUERY = """
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("/history")
 def get_num_hiring(toplevel_only: bool = True, connection: Connection = Depends(get_connection)):
     if toplevel_only:
         query = """
