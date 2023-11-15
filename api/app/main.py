@@ -6,7 +6,7 @@ from .routers import hiring, keywords, submissions
 # Constants
 ORIGINS = [
     "http://localhost:5173",
-    "https://news-headline-trends.vercel.app"
+    "https://hn-trends.vercel.app"
 ]
 
 
