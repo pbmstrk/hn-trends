@@ -263,18 +263,12 @@ function MultiSelectDropdown({ onSelectionChange, hiring }) {
 }
 
 const CustomMultiValue = (props) => {
-  const [imagePath, setImagePath] = useState('');
-
-  useEffect(() => {
-    import(`./assets/${props.data.image_path}`)
-      .then(image => setImagePath(image.default))
-      .catch(err => console.error("Failed to load image", err));
-  }, [props.data.image_path]);
+  const imgUrl = new URL(`./assets/${props.data.image_path}`, import.meta.url)
 
   return (
     <components.MultiValue {...props} className="bg-blue-100  rounded">
       <div className="flex items-center">
-        <img src={imagePath} className="w-6 h-6 mr-2" />
+        <img src={imgUrl} className="w-6 h-6 mr-2" />
         <components.MultiValueLabel {...props}>
           <span>{props.data.display_name}</span>
         </components.MultiValueLabel>
@@ -285,15 +279,8 @@ const CustomMultiValue = (props) => {
 
 
 const Option = (props) => {
-  //const [imagePath, setImagePath] = useState('');
 
   const imgUrl = new URL(`./assets/${props.data.image_path}`, import.meta.url)
-
-  // useEffect(() => {
-  //   import(`./assets/${props.data.image_path}`)
-  //     .then(image => setImagePath(image.default))
-  //     .catch(err => console.error("Failed to load image", err));
-  // }, [props.data.image_path]);
 
   return (
     <components.Option {...props} className="option-container">
