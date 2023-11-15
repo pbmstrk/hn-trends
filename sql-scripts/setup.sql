@@ -23,7 +23,8 @@ create table if not exists hiring_comments (
 create table if not exists keyword_list (
   keyword text,
   display_name text,
-  include_hiring boolean
+  include_hiring boolean,
+  image_path text
 );
 
 create table if not exists hiring_posts_log (
