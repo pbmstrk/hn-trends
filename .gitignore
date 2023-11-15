@@ -1,6 +1,5 @@
 *.exe
 *.duckdb
-*.json
 
 .venv/
 data/
@@ -29,3 +28,5 @@ target/
 .prod-env
 
 .vscode/
+
+__pycache__/
