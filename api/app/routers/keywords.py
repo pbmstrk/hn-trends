@@ -4,7 +4,7 @@ from ..db import get_connection, execute_query
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("/keywords")
 def get_num_submissions(hiring: bool = False, connection: Connection = Depends(get_connection)):
     if hiring:
         query = "select keyword as value, display_name, include_hiring, image_path from keyword_list where include_hiring"

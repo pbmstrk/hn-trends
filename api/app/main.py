@@ -21,9 +21,8 @@ app.add_middleware(
 )
 
 app.include_router(hiring.router, prefix="/hiring")
-app.include_router(keywords.router, prefix="/keywords")
 app.include_router(submissions.router, prefix="/submissions")
-
+app.include_router(keywords.router)
 
 
 
