@@ -53,7 +53,7 @@ function NumSubmissionsGraph({ data }) {
       <ResponsiveContainer width="90%" height={400}>
         <LineChart data={data} margin={{ left: 50, bottom: 30 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#efefef" />
-          <Line type="monotone" dataKey="moving_avg" stroke="#ff7300" strokeWidth={2} dot={false} />
+          <Line type="monotone" isAnimationActive={false} dataKey="moving_avg" stroke="#ff7300" strokeWidth={2} dot={false} />
           <XAxis dataKey="submission_date" tickFormatter={formatDate} interval={800} axisLine={{ stroke: '#ccc' }} tickLine={{ stroke: '#ccc' }}>
             <Label value="Date" offset={-15} position="insideBottom" />
           </XAxis>
@@ -335,8 +335,8 @@ function WhoIsHiringNumGraph() {
         <ResponsiveContainer width="90%" height={400}>
           <LineChart data={data} margin={{ left: 50, bottom: 30 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#efefef" />
-            <Line type="monotone" dataKey="num_comments" stroke="#ff7300" strokeWidth={2} dot={false} />
-            <XAxis dataKey="year_month" tickFormatter={formatDate} interval={12} axisLine={{ stroke: '#ccc' }} tickLine={{ stroke: '#ccc' }}>
+            <Line type="monotone" isAnimationActive={false} dataKey="num_comments" stroke="#ff7300" strokeWidth={2} dot={false} />
+            <XAxis dataKey="year_month" tickFormatter={formatDate} interval={26} axisLine={{ stroke: '#ccc' }} tickLine={{ stroke: '#ccc' }}>
               <Label value="Month" offset={-15} position="insideBottom" />
             </XAxis>
             <YAxis axisLine={{ stroke: '#ccc' }} tickLine={{ stroke: '#ccc' }}>
