@@ -45,6 +45,11 @@
                                     :parent_id 2
                                     :created_at "date"}))))
 
+(deftest get-search-map-test
+  (is (= {:tags "story" :creation-lb nil :creation-ub 1}
+         (hn/get-search-map :earliest {:min 1})))
+  (is (= {:tags "story" :creation-lb 1 :creation-ub nil}
+         (hn/get-search-map :latest {:max 1}))))
 
 (deftest fetch-batch-test
   (with-redefs [fetch-data-from-algolia (fn [_ _] {:hits [:hit1 :hit2]})]

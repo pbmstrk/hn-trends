@@ -109,23 +109,34 @@
                               (partial insert-comments! ds))
       (sql/insert! ds :hiring_posts_log {:objectID id}))))
 
-(defn fetch-latest-story-timestamp [ds]
-  (let [record (sql/query ds ["select max(created_at_i) from stories"])]
-    (when-let [timestamp (-> record first :max)]
-      timestamp)))
+(defn fetch-timestamps [ds]
+  (let [record (sql/query ds ["select min(created_at_i), max(created_at_i) from stories"])]
+    (first record)))
+
+(defn parse-args [args]
+  (let [command (first args)]
+    (cond
+      (nil? command) nil
+      (not (#{"earliest" "latest"} command))  (throw (Exception. "Command must be earliest or latest"))
+      :else (keyword command))))
 
 (defn refresh-views [ds views]
   (doseq [view views]
     (log/info "Running refresh for: " view)
     (jdbc/execute! ds [(format "refresh materialized view %s;" view)])))
 
-(defn -main []
+(defn get-search-map [command ts]
+  (case command
+    :earliest {:tags "story" :creation-lb nil :creation-ub (:min ts)}
+    :latest {:tags "story" :creation-lb (:max ts) :creation-ub nil}))
+
+(defn -main [& args]
   (let [ds (get-datasource-from-env)
-        latest-timestamp (fetch-latest-story-timestamp ds)]
-    ; process all new stories from the latest timestamp record in db
-    (process-search-results {:tags        "story"
-                             :creation-lb latest-timestamp
-                             :creation-ub nil}
+        ts (fetch-timestamps ds)
+        command (or (parse-args args) :latest)
+        search-map (get-search-map command ts)]
+    (println ts)
+    (process-search-results search-map
                             (partial insert-stories! ds))
     ; check if there are any unprocessed "who is hiring" stories and fetch comments
     (process-all-comments ds)
