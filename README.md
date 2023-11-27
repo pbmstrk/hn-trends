@@ -1,6 +1,6 @@
 # hn-trends 
 
-[hn-trends](https://hn-trends.vercel.app) visualises submission and hiring (via _Ask HN: Who Is Hiring?_ posts) trends. It allows users to analyze the occurrence frequency of various technologies in submission titles or hiring post descriptions.
+**[hn-trends](https://hn-trends.vercel.app)** visualises submission and hiring (via _Ask HN: Who Is Hiring?_ posts) trends. It allows users to analyze the occurrence frequency of various technologies in submission titles or hiring post descriptions.
 
 **Technology stack**: PostgreSQL, React, Docker
 
