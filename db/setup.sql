@@ -93,7 +93,7 @@ select array_agg(distinct word) from unnest(arr) as t(word)
 $$ language sql;
 
 
-create or replace procedure update_keywords_view()
+create or replace procedure update_keywords()
 language plpgsql
 as $$
 declare
@@ -140,7 +140,7 @@ begin
 END;
 $$;
 
-create or replace procedure update_hiring_keywords_view()
+create or replace procedure update_hiring_keywords()
 language plpgsql
 as $$
 declare
