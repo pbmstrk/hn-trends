@@ -18,6 +18,7 @@ Create a `.env` file in the project root with the following variables:
 
 - `POSTGRES_USER`: name of the user to connect to PostgreSQL database
 - `POSTGRES_PASSWORD`: password for user
+- `COMPOSE_PROJECT_NAME=hndata`
 
 An example file,
 
@@ -25,6 +26,7 @@ An example file,
 # update with the desired values
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
+COMPOSE_PROJECT_NAME=hndata
 ```
 
 2. **Build and run containers:**
