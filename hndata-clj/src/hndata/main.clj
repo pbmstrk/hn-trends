@@ -146,4 +146,4 @@
     ; check if there are any unprocessed "who is hiring" stories and fetch comments
     (process-all-comments ds)
     (refresh-views ds ["submissions_per_day"])
-    (call-procedures ds ["update_hiring" "update_hiring_comments"])))
+    (call-procedures ds ["update_keywords" "update_hiring_keywords"])))
