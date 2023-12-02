@@ -120,11 +120,6 @@
       (not (#{"earliest" "latest"} command))  (throw (Exception. "Command must be earliest or latest"))
       :else (keyword command))))
 
-(defn refresh-views [ds views]
-  (doseq [view views]
-    (log/info "Running refresh for: " view)
-    (jdbc/execute! ds [(format "refresh materialized view %s;" view)])))
-
 (defn call-procedures [ds procs]
   (doseq [proc procs]
     (log/info "Calling: " proc)
@@ -145,5 +140,4 @@
                             (partial insert-stories! ds))
     ; check if there are any unprocessed "who is hiring" stories and fetch comments
     (process-all-comments ds)
-    (refresh-views ds ["submissions_per_day"])
-    (call-procedures ds ["update_keywords" "update_hiring_keywords"])))
+    (call-procedures ds ["update_keywords" "update_hiring_keywords" "update_submissions_per_day"])))

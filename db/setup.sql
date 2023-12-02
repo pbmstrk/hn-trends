@@ -61,7 +61,7 @@ create table if not exists watermark (
 );
 
 insert into watermark (table_name, last_processed_id)
-values ('keywords', 0), ('hiring_keywords', 0);
+values ('keywords', 0), ('hiring_keywords', 0), ('submissions_per_day', 0);
 
 -- stores all keywords found in submissions 
 -- (one row per word per post)
@@ -84,6 +84,12 @@ create table if not exists hiring_keywords (
 );
 
 CREATE index idx_hiring_keywords_word_year_month on hiring_keywords (word, year_month);
+
+
+create table if not exists submissions_per_day (
+  submission_date date primary key,
+  num_submissions int
+);
 
 
 create or replace function distinct_words(arr text [])
@@ -188,25 +194,40 @@ begin
 end;
 $$;
 
+create or replace procedure update_submissions_per_day()
+language plpgsql
+as $$
+declare 
+  last_id int;
+begin 
+  -- Retrieve the last processed id
+    select last_processed_id into last_id from watermark where table_name = 'submissions_per_day';
 
-create materialized view submissions_per_day as (
-    with all_days as (
-        select generate_series::date as date, 0 as default 
-        from generate_series((select cast(min(submission_date) as date) from stories), current_date, interval '1 day')    ),
-    submission_days as (
-        select cast(submission_date as date) as sd, count(*) as num_submissions
-        from stories 
-        group by 1 
-        order by 1
+    insert into submissions_per_day (submission_date, num_submissions)
+    with submission_days as (
+      select cast(submission_date as date) as sd, count(*) as num_submissions
+      from stories 
+      where cast(objectid as int) > coalesce(last_id, 0)
+      group by 1 
+    ),
+    all_days as (
+      select generate_series::date as date, 0 as default 
+      from generate_series((select cast(min(sd) as date) from submission_days), current_date, interval '1 day')
     )
-    select a.date as submission_date, coalesce(s.num_submissions, a.default) as num_submissions
-    from all_days a 
+    select 
+      a.date,
+      coalesce(s.num_submissions, a.default)
+    from all_days a
     left join submission_days s 
-        on a.date = s.sd
-    where a.date <=  (select max(sd) - interval '1 day' from submission_days)
-    order by 1
-);
+      on a.date = s.sd 
+    where a.date <= (select max(sd) - interval '1 day' from submission_days)
+    on conflict (submission_date) do update 
+      set num_submissions = submissions_per_day.num_submissions + excluded.num_submissions;
 
+    update watermark set last_processed_id = (select max(cast(objectId as bigint)) from stories) where table_name = 'submissions_per_day';
+end;
+$$;
+  
 
 create or replace function get_unprocessed_hiring_stories()
 returns table (
