@@ -18,6 +18,7 @@ select
     count(title) as num_occurrences
 from keywords
 where word in :wordlist
+    and year_month <> to_char(current_date, 'YYYY-MM')
 group by year_month, word
 order by year_month
 """
