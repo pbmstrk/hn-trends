@@ -125,6 +125,11 @@
     (log/info "Running refresh for: " view)
     (jdbc/execute! ds [(format "refresh materialized view %s;" view)])))
 
+(defn call-procedures [ds procs]
+  (doseq [proc procs]
+    (log/info "Calling: " proc)
+    (jdbc/execute! ds [(format "call %s();" proc)])))
+
 (defn get-search-map [command ts]
   (case command
     :earliest {:tags "story" :creation-lb nil :creation-ub (:min ts)}
@@ -140,4 +145,5 @@
                             (partial insert-stories! ds))
     ; check if there are any unprocessed "who is hiring" stories and fetch comments
     (process-all-comments ds)
-    (refresh-views ds ["keywords" "hiring_keywords" "submissions_per_day"])))
+    (refresh-views ds ["submissions_per_day"])
+    (call-procedures ds ["update_hiring" "update_hiring_comments"])))
