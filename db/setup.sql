@@ -113,7 +113,7 @@ begin
     with processed_stories as (
         select
             *,
-            lower(trim(regexp_replace(title, '[.,:\-''=’]', ' ', 'g'))) as processed_title
+            lower(trim(regexp_replace(title, '[.,:\-''=’/()!<>]', ' ', 'g'))) as processed_title
         from stories
         where cast(objectId as int) > COALESCE(last_id, 0)
     ),
@@ -161,7 +161,7 @@ begin
     select
       *,
       lower(
-        trim(regexp_replace(comment_text, '[.,:\-''=’/]', ' ', 'g'))
+        trim(regexp_replace(comment_text, '[.,:\-''=’/()!<>]', ' ', 'g'))
       ) as processed_comment
     from hiring_comments
     where cast(objectid as int) > coalesce(last_id, 0)
