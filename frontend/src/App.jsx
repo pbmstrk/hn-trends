@@ -22,19 +22,21 @@ function App() {
           </nav>
         </div>
       </div>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<SubmissionsPage />} />
-          <Route path="whoishiring" element={<WhoIsHiring />} />
-        </Route>
-      </Routes>
+      <div className="bg-white">
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<SubmissionsPage />} />
+            <Route path="whoishiring" element={<WhoIsHiring />} />
+          </Route>
+        </Routes>
+      </div>
     </div>
   )
 }
 
 function Layout() {
   return (
-    <div className="flex-grow px-14 mt-4">
+    <div className="bg-white flex-grow px-14 mt-4 overflow-visible">
       <Outlet />
     </div>
   )
@@ -44,7 +46,7 @@ function Layout() {
 function SubmissionsPage() {
 
   return (
-    <div className="text-gray-700">
+    <div className="bg-white text-gray-700">
       <div className="mb-1">
         <NumSubmissionsPanel />
       </div>
@@ -56,7 +58,7 @@ function SubmissionsPage() {
 
 function WhoIsHiring() {
   return (
-    <div>
+    <div className="bg-white text-gray-700">
       <h2 className="text-2xl">Number of comments</h2>
       <p>The number of comments on the monthly <i>Ask HN: Who is hiring? </i>thread. Use the checkbox to toggle between displaying the count of only the top-level comments or the total number.</p>
       <WhoIsHiringNumGraph />

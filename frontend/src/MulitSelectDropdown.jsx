@@ -23,9 +23,9 @@ function MultiSelectDropdown({ onSelectionChange, hiring }) {
         onSelectionChange(selected);
     }
 
-
     return (
         <Select options={options} isMulti={true} onChange={handleChange}
+            styles={{ menu: (base) => ({ ...base, position: 'relative' }) }}    
             components={{
                 Option: Option,
                 MultiValue: CustomMultiValue
