@@ -15,7 +15,6 @@ function SubmissionTrendsPanel() {
     
     return (
       <div>
-        <h2 className="text-2xl">Trends</h2>
         <p className="mb-2">Use the dropdown option below to display the trend in frequency of certain keywords in the
           titles of submissions on Hacker News. Clicking on a trace will display a sample of submissions that
           contain the selected keyword from the corresponding time period.</p>
