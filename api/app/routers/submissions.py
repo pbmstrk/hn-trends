@@ -2,15 +2,6 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import Connection
 from ..db import get_connection, execute_query
 
-
-
-SQL_NUM_SUBMISSIONS_QUERY = """
-select 
-    submission_date, 
-    avg(num_submissions) over (order by submission_date range between interval '3' day preceding and interval '3' day following) as moving_avg 
-from submissions_per_day;
-"""
-
 SQL_SUBMISSION_KEYWORD_OCCURRENCES_QUERY = """
 select
     word, 
@@ -34,13 +25,6 @@ and year_month = :year_month
 """
 
 router = APIRouter()
-
-@router.get("/history")
-def get_num_submissions(connection: Connection = Depends(get_connection)):
-    result = execute_query(
-        connection, SQL_NUM_SUBMISSIONS_QUERY
-    )
-    return result.to_dict("records")
 
 @router.get("/samples")
 def get_submission_samples(year_month: str, keyword: str, connection: Connection = Depends(get_connection)):
