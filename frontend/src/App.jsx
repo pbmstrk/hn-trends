@@ -1,5 +1,4 @@
 import { Routes, Route, Outlet, Link } from "react-router-dom";
-import NumSubmissionsPanel from "./NumSubmissionsPanel";
 import SubmissionTrendsPanel from "./SubmissionTrendsPanel";
 import WhoIsHiringNumGraph from "./WhoIsHiringNumGraph";
 import WhoIsHiringTrendsPanel from "./WhoIsHiringTrendsPanel";
@@ -47,9 +46,6 @@ function SubmissionsPage() {
 
   return (
     <div className="bg-white text-gray-700">
-      <div className="mb-1">
-        <NumSubmissionsPanel />
-      </div>
       <SubmissionTrendsPanel />
     </div>
   );
