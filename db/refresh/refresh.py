@@ -50,7 +50,7 @@ logging.info("Loading & installing postgres extension...")
 connection.install_extension("postgres")
 connection.load_extension("postgres")
 
-connection.execute(f"ATTACH 'dbname=hndata user={POSTGRES_PASSWORD} host=db password={POSTGRES_PASSWORD}' AS postgres (TYPE POSTGRES);")
+connection.execute(f"ATTACH 'dbname=hndata user={POSTGRES_USER} host=db password={POSTGRES_PASSWORD}' AS postgres (TYPE POSTGRES);")
 logging.info("Copying table stories from postgres...")
 connection.execute("create table stories as from postgres.public.stories")
 logging.info("Creating FTS index on table: stories...")
