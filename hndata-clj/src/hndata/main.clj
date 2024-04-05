@@ -120,11 +120,6 @@
       (not (#{"earliest" "latest"} command))  (throw (Exception. "Command must be earliest or latest"))
       :else (keyword command))))
 
-(defn call-procedures [ds procs]
-  (doseq [proc procs]
-    (log/info "Calling: " proc)
-    (jdbc/execute! ds [(format "call %s();" proc)])))
-
 (defn get-search-map [command ts]
   (case command
     :earliest {:tags "story" :creation-lb nil :creation-ub (:min ts)}
@@ -139,5 +134,4 @@
     (process-search-results search-map
                             (partial insert-stories! ds))
     ; check if there are any unprocessed "who is hiring" stories and fetch comments
-    (process-all-comments ds)
-    (call-procedures ds ["update_keywords" "update_hiring_keywords" "update_submissions_per_day"])))
+    (process-all-comments ds)))
