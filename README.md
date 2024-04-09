@@ -41,7 +41,7 @@ Once the containers are up and running, the application will be accessible at `h
 
 3. **Data Loading:**
 
-Use the [`load-data.sh`](./hndata-clj/load-data.sh) script to load the Hacker News submissions into the database. The script fetches data from the [Hacker News Algolia API]([Hacker News Algolia API](https://hn.algolia.com/api)) and populates the PostgreSQL database.
+Use the [`load-data.sh`](./hndata-clj/load-data.sh) script to load the Hacker News submissions into the database. The script fetches data from the [Hacker News Algolia API](https://hn.algolia.com/api) and populates the PostgreSQL database.
 
 ```bash
 cd hndata-clj
