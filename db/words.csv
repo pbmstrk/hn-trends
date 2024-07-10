@@ -19,6 +19,7 @@ clojure,Clojure,true,clojure.svg
 perl,Perl,true,perl.svg
 f#,F#,true,fsharp.svg
 zig,Zig,true,zig.svg
+nim,Nim,true,nim.svg
 ocaml,OCaml,true,ocaml.svg
 haskell,Haskell,true,haskell.svg
 fortran,Fortran,true,fortran.svg
