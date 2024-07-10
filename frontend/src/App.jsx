@@ -5,7 +5,7 @@ import WhoIsHiringTrendsPanel from "./WhoIsHiringTrendsPanel";
 
 function App() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="bg-white flex flex-col min-h-screen">
       <div className="bg-orange-400 px-8 py-4">
         <div className="flex justify-between items-center text-gray-800">
           <h1 className="text-4xl font-bold">Hacker News Trends</h1>
@@ -21,7 +21,7 @@ function App() {
           </nav>
         </div>
       </div>
-      <div className="bg-white">
+      <div>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<SubmissionsPage />} />
@@ -35,7 +35,7 @@ function App() {
 
 function Layout() {
   return (
-    <div className="bg-white flex-grow px-14 mt-4 overflow-visible">
+    <div className="flex-grow px-14 mt-4 overflow-visible">
       <Outlet />
     </div>
   )
@@ -45,7 +45,7 @@ function Layout() {
 function SubmissionsPage() {
 
   return (
-    <div className="bg-white text-gray-700">
+    <div className= "text-gray-700">
       <SubmissionTrendsPanel />
     </div>
   );
@@ -54,7 +54,7 @@ function SubmissionsPage() {
 
 function WhoIsHiring() {
   return (
-    <div className="bg-white text-gray-700">
+    <div className= "text-gray-700">
       <h2 className="text-2xl">Number of comments</h2>
       <p>The number of comments on the monthly <i>Ask HN: Who is hiring? </i>thread. Use the checkbox to toggle between displaying the count of only the top-level comments or the total number.</p>
       <WhoIsHiringNumGraph />
