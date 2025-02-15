@@ -3,8 +3,8 @@ python,Python,true,python.svg
 javascript,JavaScript,true,javascript.svg
 typescript,TypeScript,true,typescript.svg
 java,Java,true,java.svg
-c++,C++,true,c++.svg
-c#,C#,true,csharp.svg
+cpp,C++,true,c++.svg
+csharp,C#,true,csharp.svg
 rust,Rust,true,rust.svg
 php,PHP,true,php.svg
 kotlin,Kotlin,true,kotlin.svg
@@ -17,7 +17,7 @@ elixir,Elixir,true,elixir.svg
 erlang,Erlang,true,erlang.svg
 clojure,Clojure,true,clojure.svg
 perl,Perl,true,perl.svg
-f#,F#,true,fsharp.svg
+fsharp,F#,true,fsharp.svg
 zig,Zig,true,zig.svg
 nim,Nim,true,nim.svg
 ocaml,OCaml,true,ocaml.svg
@@ -37,3 +37,5 @@ mariadb,MariaDB,true,mariadb.svg
 neo4j,Neo4j,true,neo4j.svg
 chatgpt,ChatGPT,false,chatgpt.svg
 bitcoin,Bitcoin,false,bitcoin.svg
+clickhouse,Clickhouse,true,clickhouse.svg
+duckdb,DuckDB,true,duckdb.svg

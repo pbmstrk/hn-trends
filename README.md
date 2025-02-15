@@ -48,11 +48,10 @@ cd hndata-clj
 ./load-data.sh
 ```
 
-After data loading, run [`refresh.sh`](./db/refresh/refresh.sh) to extract the keywords from the submissions. The script builds and runs a Docker container which executes a Python that uses DuckDB to extract the keywords from the submissions.
+After data loading, connect to the database and run the `process_keywords` stored procedure. This will populate the `keywords` and `hiring_keywords` tables. 
 
-```bash
-cd db/refresh
-./refresh.sh
+```sql
+call refresh_keywords();
 ```
 
 ## How is it deployed?

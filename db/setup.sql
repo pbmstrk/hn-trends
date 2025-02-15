@@ -1,3 +1,9 @@
+create text search configuration tech (copy = simple);
+create text search dictionary tech_dict (template = synonym, synonyms = tech_synonyms);
+alter text search configuration tech 
+  alter mapping for asciiword, asciihword, hword, word, numword, numhword with tech_dict;
+
+
 -- all hacker news submissions 
 -- (one row per submission)
 create table if not exists stories (
@@ -9,13 +15,28 @@ create table if not exists stories (
   year_month text generated always as (substring(submission_date, 1, 7)) stored
 );
 
+create function normalize_terms(text TEXT) 
+returns text as $$
+begin
+    return replace(
+        replace(
+            replace(
+                lower($1),
+                'f#', 'fsharp'),
+            'c#', 'csharp'),
+        'c++', 'cpp');
+end;
+$$ language plpgsql immutable;
+
+create index fts_index_stories on stories using gin (to_tsvector('tech', normalize_terms(title)));
+
 -- indexes on author and title are used to lookup 
--- _Ask HN: Who Is Hiring?_ stories 
+-- _Ask HN: Who Is Hiring? stories 
 create index idx_stories_author on stories (author);
 create index idx_stories_title on stories (lower(title));
 
--- _Ask HN: Who Is Hiring?_ submissions
-create or replace view hiring_stories as (
+-- _Ask HN: Who Is Hiring? submissions
+create view hiring_stories as (
   select * from stories
   where
     author in ('whoishiring', '_whoishiring', 'lpolovets', 'Aloisius')
@@ -23,9 +44,9 @@ create or replace view hiring_stories as (
 );
 
 
--- all comments on a _Ask HN: Who Is Hiring?_ post
+-- all comments on a Ask HN: Who Is Hiring? post
 -- (one row per comment)
-create table if not exists hiring_comments (
+create table  hiring_comments (
   objectid text primary key,
   comment_text text not null,
   storyid text not null,
@@ -35,6 +56,7 @@ create table if not exists hiring_comments (
   year_month text generated always as (substring(created_date, 1 ,7)) stored
 );
 
+create index fts_index_hiring_comments on hiring_comments using gin (to_tsvector('tech', normalize_terms(comment_text)));
 
 -- list of keywords that are included in search 
 create table if not exists keyword_list (
@@ -47,7 +69,7 @@ create table if not exists keyword_list (
 \copy keyword_list FROM 'words.csv' delimiter ',' csv header
 
 -- log used when processing new hiring posts
-create table if not exists hiring_posts_log (
+create table hiring_posts_log (
   objectid text primary key,
   processed_date timestamp default current_timestamp
 );
@@ -77,15 +99,54 @@ CREATE index idx_hiring_keywords_word_year_month on hiring_keywords (word, year_
 
 
 create or replace function get_unprocessed_hiring_stories()
-returns table (
-  objectid text
-) language plpgsql
+returns table (objectid text) language sql
 as $$ 
-begin 
-    return query 
-        select 
-            s.objectID
-        from hiring_stories s
-        where cast(s.submission_date as date) < CURRENT_DATE - interval '5 days'
-        and not exists (select 1 from hiring_posts_log h where s.objectID = h.objectID);
-end;$$;
+select 
+    s.objectID
+from hiring_stories s
+where cast(s.submission_date as date) < CURRENT_DATE - interval '5 days'
+and not exists (select 1 from hiring_posts_log h where s.objectID = h.objectID);
+$$;
+
+
+create or replace procedure process_keywords()
+language plpgsql
+as $$
+begin
+    truncate table keywords, hiring_keywords;
+
+    insert into keywords (word, objectid, submission_date, title, year_month)
+    select 
+        kl.keyword,
+        s.objectid,
+        s.submission_date,
+        s.title,
+        s.year_month
+    from keyword_list kl
+    cross join lateral (
+        select *
+        from stories s
+        where to_tsvector('tech', normalize_terms(s.title)) @@ to_tsquery('tech', kl.keyword)
+    ) s;
+
+    insert into hiring_keywords (word, objectid, year_month)
+    select 
+        kl.keyword,
+        c.objectid,
+        c.year_month
+    from keyword_list kl
+    cross join lateral (
+        select c.*
+        from hiring_comments c
+        where to_tsvector('tech', normalize_terms(c.comment_text)) @@ to_tsquery('tech', kl.keyword)
+    ) c
+    where kl.include_hiring = true;
+
+end;
+$$;
+
+
+create extension pg_cron;
+
+select cron.schedule('process-keywords', '0 12 * * 0', 'call process_keywords()');
+

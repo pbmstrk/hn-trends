@@ -3,8 +3,10 @@ version: '3.8'
 services:
   db:
     build: ./db/
+    command: postgres -c shared_preload_libraries=pg_cron -c cron.database_name=hndata
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db/tech_synonyms.syn:/usr/share/postgresql/16/tsearch_data/tech_synonyms.syn
     environment:
       POSTGRES_USER: $POSTGRES_USER
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
