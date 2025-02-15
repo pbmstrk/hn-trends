@@ -1,11 +1,17 @@
+-- ========================================
+-- Text search configuration
+-- ========================================
+
 create text search configuration tech (copy = simple);
 create text search dictionary tech_dict (template = synonym, synonyms = tech_synonyms);
 alter text search configuration tech 
   alter mapping for asciiword, asciihword, hword, word, numword, numhword with tech_dict;
 
+-- ========================================
+-- Table/view definitions
+-- ========================================
 
--- all hacker news submissions 
--- (one row per submission)
+-- hacker news submissions 
 create table if not exists stories (
   objectid text primary key,
   submission_date text not null,
@@ -15,27 +21,7 @@ create table if not exists stories (
   year_month text generated always as (substring(submission_date, 1, 7)) stored
 );
 
-create function normalize_terms(text TEXT) 
-returns text as $$
-begin
-    return replace(
-        replace(
-            replace(
-                lower($1),
-                'f#', 'fsharp'),
-            'c#', 'csharp'),
-        'c++', 'cpp');
-end;
-$$ language plpgsql immutable;
-
-create index fts_index_stories on stories using gin (to_tsvector('tech', normalize_terms(title)));
-
--- indexes on author and title are used to lookup 
--- _Ask HN: Who Is Hiring? stories 
-create index idx_stories_author on stories (author);
-create index idx_stories_title on stories (lower(title));
-
--- _Ask HN: Who Is Hiring? submissions
+-- Ask HN: Who Is Hiring? submissions
 create view hiring_stories as (
   select * from stories
   where
@@ -43,9 +29,7 @@ create view hiring_stories as (
     and lower(title) like 'ask hn: who is hiring?%' and objectid != '3300371'
 );
 
-
--- all comments on a Ask HN: Who Is Hiring? post
--- (one row per comment)
+-- comments on a Ask HN: Who Is Hiring? post
 create table  hiring_comments (
   objectid text primary key,
   comment_text text not null,
@@ -55,8 +39,6 @@ create table  hiring_comments (
   is_toplevel_comment boolean generated always as (storyid = parentid) stored,
   year_month text generated always as (substring(created_date, 1 ,7)) stored
 );
-
-create index fts_index_hiring_comments on hiring_comments using gin (to_tsvector('tech', normalize_terms(comment_text)));
 
 -- list of keywords that are included in search 
 create table if not exists keyword_list (
@@ -74,9 +56,7 @@ create table hiring_posts_log (
   processed_date timestamp default current_timestamp
 );
 
-
--- stores all keywords found in submissions 
--- (one row per word per post)
+-- keywords found in submissions 
 create table if not exists keywords (
   word text,
   objectid text,
@@ -86,8 +66,7 @@ create table if not exists keywords (
   primary key (word, objectid)
 );
 
-CREATE index idx_keywords_word_year_month on keywords (word, year_month);
-
+-- keywords found in hiring comments
 create table if not exists hiring_keywords (
   word text,
   objectid text,
@@ -95,7 +74,22 @@ create table if not exists hiring_keywords (
   primary key (word, objectid)
 );
 
-CREATE index idx_hiring_keywords_word_year_month on hiring_keywords (word, year_month);
+-- ========================================
+-- Functions/procedures
+-- ========================================
+
+create function normalize_terms(text TEXT) 
+returns text as $$
+begin
+    return replace(
+        replace(
+            replace(
+                lower($1),
+                'f#', 'fsharp'),
+            'c#', 'csharp'),
+        'c++', 'cpp');
+end;
+$$ language plpgsql immutable;
 
 
 create or replace function get_unprocessed_hiring_stories()
@@ -107,7 +101,6 @@ from hiring_stories s
 where cast(s.submission_date as date) < CURRENT_DATE - interval '5 days'
 and not exists (select 1 from hiring_posts_log h where s.objectID = h.objectID);
 $$;
-
 
 create or replace procedure process_keywords()
 language plpgsql
@@ -136,17 +129,38 @@ begin
         c.year_month
     from keyword_list kl
     cross join lateral (
-        select c.*
+        select *
         from hiring_comments c
         where to_tsvector('tech', normalize_terms(c.comment_text)) @@ to_tsquery('tech', kl.keyword)
     ) c
     where kl.include_hiring = true;
-
 end;
 $$;
 
+-- ========================================
+-- Indexes
+-- ========================================
+
+create index fts_index_stories on stories using gin (to_tsvector('tech', normalize_terms(title)));
+create index fts_index_hiring_comments on hiring_comments using gin (to_tsvector('tech', normalize_terms(comment_text)));
+
+-- indexes on author and title are used to lookup Ask HN: Who Is Hiring? stories 
+create index idx_stories_author on stories (author);
+create index idx_stories_title on stories (lower(title));
+
+
+CREATE index idx_keywords_word_year_month on keywords (word, year_month);
+CREATE index idx_hiring_keywords_word_year_month on hiring_keywords (word, year_month);
+
+-- ========================================
+-- Scheduled Tasks
+-- ========================================
 
 create extension pg_cron;
 
-select cron.schedule('process-keywords', '0 12 * * 0', 'call process_keywords()');
+select cron.schedule(
+  'process-keywords',
+  '0 12 * * 0',
+  'call process_keywords()'
+);
 
